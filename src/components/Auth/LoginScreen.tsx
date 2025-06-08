@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
-import { User } from '@/types';
+import { User as UserType } from '@/types';
+import { User as UserIcon } from 'lucide-react';
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export function LoginScreen() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const user: User = {
+    const user: UserType = {
       id: Math.random().toString(36).substr(2, 9),
       name: name || 'Demo User',
       email: email || 'demo@safecircle.com',
@@ -33,7 +34,7 @@ export function LoginScreen() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="w-8 h-8 text-primary-foreground" />
+            <UserIcon className="w-8 h-8 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">SafeCircle</CardTitle>
           <CardDescription>
