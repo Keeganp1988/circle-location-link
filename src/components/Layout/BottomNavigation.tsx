@@ -9,8 +9,8 @@ interface BottomNavigationProps {
 }
 
 const tabs = [
-  { id: 'map', label: 'Map', icon: Map },
   { id: 'circles', label: 'Circles', icon: User },
+  { id: 'map', label: 'Map', icon: Map },
   { id: 'alerts', label: 'Alerts', icon: Bell },
   { id: 'places', label: 'Places', icon: Search },
 ];

@@ -20,11 +20,11 @@ function MainApp() {
 
   const renderActiveTab = () => {
     switch (activeTab) {
-      case 'map':
-        return <MapView />;
       case 'circles':
         return <CirclesView />;
-      case 'alerts':
+      case 'map':
+        return <MapView />;
+          case 'alerts':
         return (
           <div className="flex-1 p-4 pb-20">
             <div className="max-w-md mx-auto">
