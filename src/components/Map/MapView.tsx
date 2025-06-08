@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
+import { Loader } from '@googlemaps/js-api-loader';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
@@ -8,8 +8,8 @@ import { getCurrentLocation, requestLocationPermissions } from '@/utils/location
 
 export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
+  const map = useRef<google.maps.Map | null>(null);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState('');
   const { currentLocation, updateLocation, userLocations } = useApp();
 
   const initializeLocation = async () => {
@@ -29,56 +29,79 @@ export function MapView() {
   }, []);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current || !googleMapsApiKey) return;
 
-    mapboxgl.accessToken = mapboxToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: currentLocation ? [currentLocation.longitude, currentLocation.latitude] : [-122.4194, 37.7749],
-      zoom: 14,
+    const loader = new Loader({
+      apiKey: googleMapsApiKey,
+      version: 'weekly',
+      libraries: ['places']
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    loader.load().then(() => {
+      if (!mapContainer.current) return;
+
+      const mapOptions: google.maps.MapOptions = {
+        center: currentLocation 
+          ? { lat: currentLocation.latitude, lng: currentLocation.longitude }
+          : { lat: 37.7749, lng: -122.4194 },
+        zoom: 14,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+      };
+
+      map.current = new google.maps.Map(mapContainer.current, mapOptions);
+    }).catch((error) => {
+      console.error('Error loading Google Maps:', error);
+    });
 
     return () => {
-      map.current?.remove();
+      map.current = null;
     };
-  }, [mapboxToken]);
+  }, [googleMapsApiKey]);
 
   useEffect(() => {
     if (map.current && currentLocation) {
-      map.current.flyTo({
-        center: [currentLocation.longitude, currentLocation.latitude],
-        zoom: 15,
-      });
+      const position = { lat: currentLocation.latitude, lng: currentLocation.longitude };
+      
+      map.current.setCenter(position);
+      map.current.setZoom(15);
 
       // Add user location marker
-      new mapboxgl.Marker({ color: '#3b82f6' })
-        .setLngLat([currentLocation.longitude, currentLocation.latitude])
-        .addTo(map.current);
+      new google.maps.Marker({
+        position,
+        map: map.current,
+        title: 'Your Location',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#3b82f6',
+          fillOpacity: 1,
+          strokeWeight: 2,
+          strokeColor: '#ffffff',
+        }
+      });
     }
   }, [currentLocation]);
 
-  if (!mapboxToken) {
+  if (!googleMapsApiKey) {
     return (
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="p-6 max-w-md">
           <h3 className="text-lg font-semibold mb-2">Map Configuration Required</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Please enter your Mapbox access token to enable the map functionality.
+            Please enter your Google Maps API key to enable the map functionality.
           </p>
           <input
             type="text"
-            placeholder="Mapbox Access Token"
+            placeholder="Google Maps API Key"
             className="w-full p-2 border rounded mb-4"
-            onChange={(e) => setMapboxToken(e.target.value)}
+            onChange={(e) => setGoogleMapsApiKey(e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            Get your free token at{' '}
-            <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary">
-              mapbox.com
+            Get your free API key at{' '}
+            <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" rel="noopener noreferrer" className="text-primary">
+              Google Cloud Console
             </a>
           </p>
         </Card>
