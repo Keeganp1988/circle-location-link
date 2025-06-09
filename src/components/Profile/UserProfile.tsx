@@ -3,11 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useApp } from '@/contexts/AppContext';
+import { useAppContext } from '@/contexts/AppContext';
 import { User } from 'lucide-react';
 
 export function UserProfile() {
-  const { user, logout, isLocationSharingEnabled, toggleLocationSharing } = useApp();
+  const { user, logout, isLocationSharingEnabled, toggleLocationSharing } = useAppContext();
 
   if (!user) return null;
 

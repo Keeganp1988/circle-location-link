@@ -2,6 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Map, User, Bell, Search } from 'lucide-react';
+import CirclesScreen from '@/screens/CirclesScreen';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -14,6 +15,7 @@ const tabs = [
   { id: 'alerts', label: 'Alerts', icon: Bell },
   { id: 'places', label: 'Places', icon: Search },
 ];
+
 
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   return (

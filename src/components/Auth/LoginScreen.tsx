@@ -1,32 +1,52 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useApp } from '@/contexts/AppContext';
-import { User as UserType } from '@/types';
+import { useAppContext } from '@/contexts/AppContext';
 import { User as UserIcon } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { User } from '@/types';
+
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const { login } = useApp();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useAppContext();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const user: UserType = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: name || 'Demo User',
-      email: email || 'demo@safecircle.com',
-      phone,
-      isOnline: true,
-      lastSeen: new Date(),
-    };
-    
-    login(user);
+    setLoading(true);
+    setError('');
+
+    try {
+      let userCredential;
+      if (isSignUp) {
+        userCredential = await createUserWithEmailAndPassword(auth, email, 'password123');
+      } else {
+        userCredential = await signInWithEmailAndPassword(auth, email, 'password123');
+      }
+
+      const firebaseUser = userCredential.user;
+
+      login({
+        id: firebaseUser.uid,
+        name: name || firebaseUser.displayName || 'User',
+        email: firebaseUser.email || '',
+        phone,
+        isOnline: true,
+        lastSeen: new Date(),
+      });
+
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,6 +77,7 @@ export function LoginScreen() {
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
             <Input
               type="tel"
@@ -64,11 +85,13 @@ export function LoginScreen() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
-            <Button type="submit" className="w-full">
-              {isSignUp ? 'Create Account' : 'Sign In'}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
             </Button>
           </form>
-          
+
+          {error && <p className="mt-2 text-sm text-red-500 text-center">{error}</p>}
+
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}
@@ -81,10 +104,10 @@ export function LoginScreen() {
               </button>
             </p>
           </div>
-          
+
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <p className="text-xs text-muted-foreground text-center">
-              Demo Mode: You can use any email or leave fields empty to continue
+              This form uses Firebase Email Auth. Password is hardcoded for now as <b>password123</b>.
             </p>
           </div>
         </CardContent>

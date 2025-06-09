@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/AppContext';
+import { useAppContext } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function SOSButton() {
   const [isSOSActive, setIsSOSActive] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdown, setCountdown] = useState(10);
-  const { sendCheckIn, currentLocation } = useApp();
+  const { sendCheckIn, currentLocation } = useAppContext();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;

@@ -1,3 +1,4 @@
+// src/types/index.ts
 
 export interface User {
   id: string;
@@ -22,6 +23,14 @@ export interface UserLocation extends Location {
   user: User;
 }
 
+export interface CircleSettings {
+  allowLocationHistory: boolean;
+  allowGeofencing: boolean;
+  emergencyContacts: string[];
+  locationSharing: boolean;
+  checkInFrequencyMinutes: number;
+}
+
 export interface Circle {
   id: string;
   name: string;
@@ -31,33 +40,6 @@ export interface Circle {
   inviteCode: string;
   createdAt: Date;
   settings: CircleSettings;
-}
-
-export interface CircleSettings {
-  allowLocationHistory: boolean;
-  allowGeofencing: boolean;
-  emergencyContacts: string[];
-}
-
-export interface GeofenceAlert {
-  id: string;
-  circleId: string;
-  userId: string;
-  location: Location;
-  radius: number;
-  name: string;
-  alertType: 'enter' | 'exit';
-  isActive: boolean;
-  createdBy: string;
-}
-
-export interface CheckIn {
-  id: string;
-  userId: string;
-  location: Location;
-  message?: string;
-  type: 'check-in' | 'sos' | 'safe';
-  timestamp: Date;
 }
 
 export interface AppState {

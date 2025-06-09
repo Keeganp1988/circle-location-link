@@ -1,15 +1,30 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useApp } from '@/contexts/AppContext';
+import { useAppContext } from "@/contexts/AppContext";
 import { User } from 'lucide-react';
 
+// ✅ Define types
+type Member = {
+  id: string;
+  name: string;
+};
+
+type Circle = {
+  id: string;
+  name: string;
+  inviteCode: string;
+  description?: string;
+  members: Member[];
+};
+
 export function CirclesView() {
-  const { circles, createCircle, joinCircle, user } = useApp();
+  // Use the correct context hook here
+  const { circles, createCircle, joinCircle, user } = useAppContext();
+
   const [newCircleName, setNewCircleName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -64,9 +79,9 @@ export function CirclesView() {
                   onChange={(e) => setNewCircleName(e.target.value)}
                 />
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     onClick={() => setIsCreateModalOpen(false)}
-                    variant="outline" 
+                    variant="outline"
                     className="flex-1"
                   >
                     Cancel
@@ -99,9 +114,9 @@ export function CirclesView() {
                   onChange={(e) => setInviteCode(e.target.value)}
                 />
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     onClick={() => setIsJoinModalOpen(false)}
-                    variant="outline" 
+                    variant="outline"
                     className="flex-1"
                   >
                     Cancel
@@ -149,7 +164,7 @@ export function CirclesView() {
                     </code>
                   </div>
                   <div className="mt-3 flex -space-x-2">
-                    {circle.members.slice(0, 5).map((member, index) => (
+                    {circle.members.slice(0, 5).map((member) => (
                       <div
                         key={member.id}
                         className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium border-2 border-background"

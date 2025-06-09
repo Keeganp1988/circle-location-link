@@ -1,16 +1,17 @@
-
+/// <reference types="google.maps" />
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/AppContext';
+import { useAppContext } from '@/contexts/AppContext';
 import { getCurrentLocation, requestLocationPermissions } from '@/utils/location';
+import type { Location } from '@/types';
 
 export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState('');
-  const { currentLocation, updateLocation, userLocations } = useApp();
+  const { currentLocation, updateLocation, userLocations } = useAppContext();
 
   const initializeLocation = async () => {
     const hasPermission = await requestLocationPermissions();
@@ -21,6 +22,8 @@ export function MapView() {
       } catch (error) {
         console.error('Failed to get current location:', error);
       }
+    } else {
+      console.warn('Location permission denied');
     }
   };
 
@@ -34,36 +37,41 @@ export function MapView() {
     const loader = new Loader({
       apiKey: googleMapsApiKey,
       version: 'weekly',
-      libraries: ['places']
+      libraries: ['places'],
     });
 
-    loader.load().then(() => {
-      if (!mapContainer.current) return;
+    loader
+      .load()
+      .then(() => {
+        if (!mapContainer.current) return;
 
-      const mapOptions: google.maps.MapOptions = {
-        center: currentLocation 
-          ? { lat: currentLocation.latitude, lng: currentLocation.longitude }
-          : { lat: 37.7749, lng: -122.4194 },
-        zoom: 14,
-        mapTypeControl: true,
-        streetViewControl: true,
-        fullscreenControl: true,
-      };
+        const mapOptions: google.maps.MapOptions = {
+          center: currentLocation
+            ? { lat: currentLocation.latitude, lng: currentLocation.longitude }
+            : { lat: 37.7749, lng: -122.4194 },
+          zoom: 14,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+        };
 
-      map.current = new google.maps.Map(mapContainer.current, mapOptions);
-    }).catch((error) => {
-      console.error('Error loading Google Maps:', error);
-    });
+        map.current = new google.maps.Map(mapContainer.current, mapOptions);
+      })
+      .catch((error) => {
+        console.error('Error loading Google Maps:', error);
+      });
 
     return () => {
-      map.current = null;
+      if (map.current) {
+        map.current = null; // clean up
+      }
     };
   }, [googleMapsApiKey]);
 
   useEffect(() => {
     if (map.current && currentLocation) {
       const position = { lat: currentLocation.latitude, lng: currentLocation.longitude };
-      
+
       map.current.setCenter(position);
       map.current.setZoom(15);
 
@@ -79,7 +87,7 @@ export function MapView() {
           fillOpacity: 1,
           strokeWeight: 2,
           strokeColor: '#ffffff',
-        }
+        },
       });
     }
   }, [currentLocation]);
@@ -100,7 +108,12 @@ export function MapView() {
           />
           <p className="text-xs text-muted-foreground">
             Get your free API key at{' '}
-            <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" rel="noopener noreferrer" className="text-primary">
+            <a
+              href="https://console.cloud.google.com/google/maps-apis"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary"
+            >
               Google Cloud Console
             </a>
           </p>
@@ -112,15 +125,10 @@ export function MapView() {
   return (
     <div className="flex-1 relative">
       <div ref={mapContainer} className="absolute inset-0" />
-      
+
       {/* Location update button */}
       <div className="absolute top-4 left-4 z-10">
-        <Button
-          onClick={initializeLocation}
-          variant="secondary"
-          size="sm"
-          className="shadow-lg"
-        >
+        <Button onClick={initializeLocation} variant="secondary" size="sm" className="shadow-lg">
           Update Location
         </Button>
       </div>
@@ -134,9 +142,7 @@ export function MapView() {
               {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
             </p>
             {currentLocation.accuracy && (
-              <p className="text-xs text-muted-foreground">
-                Accuracy: ±{Math.round(currentLocation.accuracy)}m
-              </p>
+              <p className="text-xs text-muted-foreground">Accuracy: ±{Math.round(currentLocation.accuracy)}m</p>
             )}
           </Card>
         </div>

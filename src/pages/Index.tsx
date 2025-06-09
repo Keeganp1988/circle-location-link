@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AppProvider, useApp } from '@/contexts/AppContext';
+import { useAppContext } from '@/contexts/AppContext';
 import { LoginScreen } from '@/components/Auth/LoginScreen';
 import { BottomNavigation } from '@/components/Layout/BottomNavigation';
 import { MapView } from '@/components/Map/MapView';
@@ -9,9 +9,11 @@ import { UserProfile } from '@/components/Profile/UserProfile';
 import { SOSButton } from '@/components/Emergency/SOSButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bell, Search } from 'lucide-react';
+import { AppProvider } from '@/contexts/AppContext';
+
 
 function MainApp() {
-  const { user } = useApp();
+  const { user } = useAppContext();
   const [activeTab, setActiveTab] = useState('map');
 
   if (!user) {
