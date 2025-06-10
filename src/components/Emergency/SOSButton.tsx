@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/contexts/AppContext';
+import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function SOSButton() {
   const [isSOSActive, setIsSOSActive] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdown, setCountdown] = useState(10);
-  const { sendCheckIn, currentLocation } = useAppContext();
+  const { sendCheckIn, currentLocation } = useApp();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -108,7 +108,7 @@ export function SOSButton() {
   // ------------------
   // Render: SOS Button (default state)
   return (
-    <div className="fixed bottom-20 right-4 z-40">
+    <div className="fixed bottom-32 right-4 z-40">
       <Button
         onClick={handleSOSPress}
         className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg border-4 border-white"

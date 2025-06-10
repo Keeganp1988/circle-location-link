@@ -1,25 +1,39 @@
 // types.ts
 
+export type MovementStatus = 'stationary' | 'walking' | 'driving';
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  phone?: string; // <-- optional phone field
-  avatar?: string;
+  phone: string;
   isOnline: boolean;
   lastSeen: Date;
-  // Add any other fields your app uses (e.g., photoURL, phoneNumber, etc.)
+  location?: Location;
+  profileImage?: string;
+  status?: string;
 }
 
 export interface Location {
-  lat: number;
-  lng: number;
-  timestamp: number; // Unix time in ms
+  latitude: number;
+  longitude: number;
+  timestamp: Date;
+  address?: string;
+  movementStatus: MovementStatus;
+  speed?: number;
+  accuracy?: number;
+  heading?: number;
 }
 
-export interface UserLocation extends Location {
+export interface UserLocation {
+  id: string;  // Document ID
   userId: string;
-  name: string; // User's name
+  circleId: string;
+  location: Location;
+  user: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface Circle {
@@ -56,9 +70,5 @@ export interface AppState {
   userLocations: UserLocation[];
   isLocationSharingEnabled: boolean;
   isLoading: boolean;
-}
-export interface Location {
-  latitude: number;
-  longitude: number;
-  accuracy?: number;
+  error: string | null;
 }

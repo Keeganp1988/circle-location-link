@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isMember(members) {
+      return isAuthenticated() && request.auth.uid in members;
+    }
+    
+    // Circles collection rules
+    match /circles/{circleId} {
+      // Allow reading if user is authenticated
+      allow read: if isAuthenticated();
+      
+      // Allow creating circles
+      allow create: if isAuthenticated() && 
+                   request.resource.data.ownerId == request.auth.uid;
+      
+      // Allow updating if user is a member or adding themselves as a member
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        request.auth.uid in resource.data.members ||
+        (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['members']) &&
+          request.resource.data.members.hasAll(resource.data.members) &&
+          request.resource.data.members.size() == resource.data.members.size() + 1 &&
+          request.resource.data.members[request.resource.data.members.size() - 1] == request.auth.uid
+        )
+      );
+      
+      // Only owner can delete
+      allow delete: if isAuthenticated() && 
+                   request.auth.uid == resource.data.ownerId;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Allow reading user profiles
+      allow read: if isAuthenticated();
+      
+      // Allow users to write their own profile
+      allow write: if isAuthenticated() && 
+                  request.auth.uid == userId;
+    }
+
+    // Locations collection rules
+    match /locations/{locationId} {
+      // Allow reading locations if user is a member of the circle
+      allow read: if isAuthenticated() &&
+                  exists(/databases/$(database)/documents/circles/$(resource.data.circleId)) &&
+                  request.auth.uid in get(/databases/$(database)/documents/circles/$(resource.data.circleId)).data.members;
+      
+      // Allow creating/updating own location if user is a member of the circle
+      allow create, update: if isAuthenticated() &&
+                           request.auth.uid == request.resource.data.userId &&
+                           exists(/databases/$(database)/documents/circles/$(request.resource.data.circleId)) &&
+                           request.auth.uid in get(/databases/$(database)/documents/circles/$(request.resource.data.circleId)).data.members;
+      
+      // Allow deleting own location
+      allow delete: if isAuthenticated() &&
+                   request.auth.uid == resource.data.userId;
+    }
+  }
+} 

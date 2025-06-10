@@ -1,46 +1,63 @@
-
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Map, User, Bell, Search } from 'lucide-react';
-import CirclesScreen from '@/screens/CirclesScreen';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Bell, MapPin, Users, Building2 } from 'lucide-react';
 
 interface BottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-const tabs = [
-  { id: 'circles', label: 'Circles', icon: User },
-  { id: 'map', label: 'Map', icon: Map },
-  { id: 'alerts', label: 'Alerts', icon: Bell },
-  { id: 'places', label: 'Places', icon: Search },
-];
-
-
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
+  const navigate = useNavigate();
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
-      <div className="flex items-center justify-around py-2 px-4 safe-area-bottom">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={cn(
-                "flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200",
-                isActive 
-                  ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Icon size={20} className="mb-1" />
-              <span className="text-xs font-medium">{tab.label}</span>
-            </button>
-          );
-        })}
+    <div className="fixed bottom-0 left-0 right-0 border-t bg-background">
+      <div className="flex justify-around items-center h-16">
+        <Button
+          variant={activeTab === 'circles' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => {
+            onTabChange('circles');
+            navigate('/');
+          }}
+          className="flex-1 h-full rounded-none"
+        >
+          <Users className="h-5 w-5" />
+        </Button>
+        <Button
+          variant={activeTab === 'map' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => {
+            onTabChange('map');
+            navigate('/map');
+          }}
+          className="flex-1 h-full rounded-none"
+        >
+          <MapPin className="h-5 w-5" />
+        </Button>
+        <Button
+          variant={activeTab === 'alerts' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => {
+            onTabChange('alerts');
+            navigate('/alerts');
+          }}
+          className="flex-1 h-full rounded-none"
+        >
+          <Bell className="h-5 w-5" />
+        </Button>
+        <Button
+          variant={activeTab === 'places' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => {
+            onTabChange('places');
+            navigate('/places');
+          }}
+          className="flex-1 h-full rounded-none"
+        >
+          <Building2 className="h-5 w-5" />
+        </Button>
       </div>
     </div>
   );

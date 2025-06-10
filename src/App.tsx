@@ -1,65 +1,97 @@
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { getAuth, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/firebase/firebase";
+import { useApp, AppProvider } from "@/contexts/AppContext";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import JoinCircle from "./pages/JoinCircle";
 
-import { getAuth, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { useAppContext, AppProvider } from "@/contexts/AppContext";
-
-
 const queryClient = new QueryClient();
 
-// Component to sync Firebase Auth state with your AppContext user state
+// 👇 Syncs Firebase auth with app context
 function AuthStateListener({ children }: { children: React.ReactNode }) {
-  const { login, logout } = useAppContext();
+  const { login, logout } = useApp();
   const auth = getAuth();
 
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-    if (firebaseUser) {
-      const user = {
-        id: firebaseUser.uid,
-        name: firebaseUser.displayName || "",
-        email: firebaseUser.email || "",
-        isOnline: true,
-        lastSeen: new Date(),
-      };
-      login(user);
-    } else {
-      logout();
-    }
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        // Get or create user document
+        const userRef = doc(db, 'users', firebaseUser.uid);
+        const userDoc = await getDoc(userRef);
+        
+        let userName;
+        
+        if (userDoc.exists()) {
+          // Use existing name from Firestore
+          const userData = userDoc.data();
+          userName = userData.name;
+        } else {
+          // If no Firestore document exists, use Firebase Auth displayName
+          userName = firebaseUser.displayName || 'User';
+          
+          // Create new user document with the name from Firebase Auth
+          await setDoc(userRef, {
+            name: userName,
+            email: firebaseUser.email || '',
+            lastSeen: serverTimestamp(),
+            isOnline: true
+          });
+        }
 
-  return () => unsubscribe();
-}, [auth, login, logout]);
+        const userData = {
+          id: firebaseUser.uid,
+          name: userName,
+          email: firebaseUser.email || '',
+          phone: '',  // Required field, default to empty string
+          isOnline: true,
+          lastSeen: new Date(),
+          location: undefined,  // Optional field
+          profileImage: firebaseUser.photoURL || undefined,  // Optional field
+          status: undefined  // Optional field
+        };
+        login(userData);
+      } else {
+        logout();
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth, login, logout]);
 
   return <>{children}</>;
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AppProvider>
+function AppContent() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
         <AuthStateListener>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/join" element={<JoinCircle />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/map" element={<Navigate to="/" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          <Toaster />
         </AuthStateListener>
-      </AppProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
-export default App;
+export function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
+  );
+}

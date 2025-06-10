@@ -1,18 +1,17 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useAppContext } from '@/contexts/AppContext';
+import { useApp } from '@/contexts/AppContext';
 import { User } from 'lucide-react';
 
 export function UserProfile() {
-  const { user, logout, isLocationSharingEnabled, toggleLocationSharing } = useAppContext();
+  const { user, logout, isLocationSharingEnabled, toggleLocationSharing } = useApp();
 
   if (!user) return null;
 
   return (
-    <div className="p-4 pb-20">
+    <div className="p-4 pb-32">
       <div className="max-w-md mx-auto space-y-4">
         {/* Profile Header */}
         <Card>
